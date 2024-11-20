@@ -149,7 +149,7 @@ class Manager(Node):
 
         goal_msg = Discover.Goal()
         goal_msg.strategy= 1
-        goal_msg.map_completed_thres = 0.97
+        goal_msg.map_completed_thres = 0.80
 
         self.get_logger().info('Sending discoverer goal request...')
         self.get_logger().info('Discovering until 97% map completed')
