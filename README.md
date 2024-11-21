@@ -1,6 +1,6 @@
 # ROS 2 Turtlebot 3 Map Explorer
 ## Description
-In this repo we use Turtlebot 3 along with ROS 2 and Gazebo to explore an unknown csv environment, navigate through it and create a map. 
+In this repo we use Turtlebot 3 along with ROS 2 to explore an unknown csv environment, navigate through it and create a map. 
 
 The map is created using SLAM with the package [Google Cartographer](https://github.com/cartographer-project/cartographer) and navigation is achieved with [Nav2](https://github.com/ros-planning/navigation2) package. We have developed two exploring algorithyms:
 
@@ -45,35 +45,30 @@ sudo apt update && rosdep install -r --from-paths . --ignore-src --rosdistro $RO
 cd ~/turtlebot3_ws/
 colcon build
 ```
-Include the following lines in ~/.bashrc:
+Include the following lines in ~/.bashrc (ROS Domain for specific robot application):
 ```
 source /opt/ros/humble/local_setup.bash
 source ~/turtlebot3_ws/install/local_setup.bash
 
+export ROS_DOMAIN_ID=5
 export TURTLEBOT3_MODEL=burger
-export GAZEBO_MODEL_PATH=~/turtlebot3_ws/src/ros2_explorer/explorer_gazebo/models
 ```
-## How to run
-Execute the launch file and pass the map name (Opens Gazebo simulation, Rviz, Cartographer, Nav2 and exploration servers):
+## How to run exploration
+Execute the launch file and pass the map name (Opens Rviz, Cartographer, Nav2 and exploration servers):
 ```
-ros2 launch explorer_bringup explorer.launch.py map_name:=map10
+ros2 launch explorer_bringup explorer.launch.py
 ```
 Execute manager node and select the desired exploring algorithm:
 ```
 ros2 run explorer_bringup manager
 ```
-## Add your own CSV Map
-Add your own csv maps in this folder:
+## Save map with nav2
 ```
-cd ~/turtlebot3_ws/src/ros2_explorer/explorer_gazebo/maps/
+ros2 run explorer_bringup manager
 ```
-Run Python script:
-```
-cd ~/turtlebot3_ws/src/ros2_explorer/explorer_gazebo/
-python3 gazebo-map-from-csv.py
-```
-Maps will be converted to Gazebo format in `/explorer_gazebo/models` folder. Create a new .world.xml file in `/explorer_gazebo/worlds` and modify the name of the map you want to use:
-```
+
+## Run navigation
+
 <include>
   <uri>model://map1</uri>
 </include>
