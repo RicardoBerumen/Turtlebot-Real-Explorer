@@ -8,6 +8,7 @@
 #include <rcl/error_handling.h>
 #include <rclc/rclc.h>
 #include <rclc/executor.h>
+
 #include <ESP32Servo.h>
 #include <sensor_msgs/msg/imu.h>  
 #include <MatrixMath.h>
@@ -16,7 +17,9 @@
 rcl_subscription_t imu_subscriber;
 rcl_publisher_t imu_publisher;
 sensor_msgs__msg__Imu imu_data_received;
-sensor_msgs__msg__Imu imu_data_to_publish;
+//mensaje de prueba
+geometry_msgs__msg__Vector3 imu_data_to_publish;
+////
 rclc_executor_t executor;
 rclc_support_t support;
 rcl_allocator_t allocator;
@@ -227,7 +230,10 @@ angleDegrees1= angleRadians1*180/PI;
   float angleRadians2 =atan(accel_y/sqrt(accel_x*accel_x+accel_z*accel_z));
   angleDegrees2= angleRadians2*180/PI; 
 
-  
+
+  imu_data_to_publish.x = angleDegrees2;
+  imu_data_to_publish.y = angleDegrees1;
+  rcl_publish(&imu_publisher, &imu_data_to_publish, NULL);
   
 
 }
@@ -277,11 +283,15 @@ void Task1code( void * pvParameters ){
   
   allocator = rcl_get_default_allocator();
 
-  //create init_options
-  RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
+    // Crear opciones de inicialización e incluir el dominio
+    rcl_init_options_t init_options = rcl_get_zero_initialized_init_options();
+    rcl_init_options_init(&init_options, allocator);
+    rcl_init_options_set_domain_id(&init_options, 5);  // Configura el dominio ROS a 5
 
-  // create node
-  RCCHECK(rclc_node_init_default(&node, "imu_data", "", &support));
+
+    // Crear soporte y nodo con las opciones personalizadas
+    rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator);
+    rclc_node_init_default(&node, "imu_data", "", &support);
 
   // create subscriber
   RCCHECK(rclc_subscription_init_default(
@@ -289,7 +299,12 @@ void Task1code( void * pvParameters ){
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
     "/imu"));
-
+     // // create publisher
+  RCCHECK(rclc_publisher_init_default(
+    &imu_publisher,
+    &node,
+    ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
+    "/imu_print"));
 
   // create executor
   RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));
