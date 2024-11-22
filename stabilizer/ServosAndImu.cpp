@@ -16,10 +16,10 @@
 
 
 rcl_subscription_t imu_subscriber;
-rcl_publisher_t imu_publisher;
+//rcl_publisher_t imu_publisher;
 sensor_msgs__msg__Imu imu_data_received;
 //mensaje de prueba
-geometry_msgs__msg__Vector3 imu_data_to_publish;
+//geometry_msgs__msg__Vector3 imu_data_to_publish;
 ////
 rclc_executor_t executor;
 rclc_support_t support;
@@ -231,10 +231,12 @@ angleDegrees1= angleRadians1*180/PI;
   float angleRadians2 =atan(accel_y/sqrt(accel_x*accel_x+accel_z*accel_z));
   angleDegrees2= angleRadians2*180/PI; 
 
-
+/*
   imu_data_to_publish.x = angleDegrees2;
   imu_data_to_publish.y = angleDegrees1;
   rcl_publish(&imu_publisher, &imu_data_to_publish, NULL);
+*/
+  servo1.write(static_cast<int>(angleDegrees2));
   
 
 }
@@ -301,11 +303,6 @@ void Task1code( void * pvParameters ){
     ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
     "/imu"));
      // // create publisher
-  RCCHECK(rclc_publisher_init_default(
-    &imu_publisher,
-    &node,
-    ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
-    "/imu_print"));
 
   // create executor
   RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));
@@ -325,7 +322,6 @@ void Task2code( void * pvParameters ){
   Serial.println(angleDegrees1);
   Serial.print("angulo 2: ");
   Serial.println(angleDegrees2);
-  servo1.write(90);
   
 }
 
