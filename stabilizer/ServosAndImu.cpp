@@ -11,6 +11,7 @@
 
 #include <ESP32Servo.h>
 #include <sensor_msgs/msg/imu.h>  
+#include <geometry_msgs/msg/vector3.h>
 #include <MatrixMath.h>
 
 
@@ -246,9 +247,9 @@ void setup() {
     servo1.attach(pinServo1);
   servo2.attach(pinServo2);
   servo3.attach(pinServo3);
-    servo1.write(0);
-  servo2.write(0);    // Mover el servo a 0 grados
-  servo3.write(0);
+   // servo1.write(0);
+  //servo2.write(0);    // Mover el servo a 0 grados
+  //servo3.write(0);
   delay(3000);
   ////////////////////////////////////
   //create a task that will be executed in the Task1code() function, with priority 1 and executed on core 0
@@ -303,7 +304,7 @@ void Task1code( void * pvParameters ){
   RCCHECK(rclc_publisher_init_default(
     &imu_publisher,
     &node,
-    ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
+    ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
     "/imu_print"));
 
   // create executor
