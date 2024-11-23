@@ -311,7 +311,7 @@ void Task1code( void * pvParameters ){
 
   for(;;){
     delay(100);
-  RCCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
+  RCCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10)));
   } 
 }
 
