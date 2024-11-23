@@ -16,10 +16,10 @@
 
 
 rcl_subscription_t imu_subscriber;
-//rcl_publisher_t imu_publisher;
+rcl_publisher_t imu_publisher;
 sensor_msgs__msg__Imu imu_data_received;
 //mensaje de prueba
-//geometry_msgs__msg__Vector3 imu_data_to_publish;
+geometry_msgs__msg__Vector3 imu_data_to_publish;
 ////
 rclc_executor_t executor;
 rclc_support_t support;
@@ -224,20 +224,27 @@ void imu_subscription_callback(const void * msgin)
   float accel_x = msg->linear_acceleration.x;
   float accel_y = msg->linear_acceleration.y;
   float accel_z = msg->linear_acceleration.z;
-float angleRadians1 =atan(accel_x/sqrt(accel_y*accel_y+accel_z*accel_z));
+
+   float angleRadians1 =atan(accel_x/sqrt(accel_y*accel_y+accel_z*accel_z));
 angleDegrees1= angleRadians1*180/PI; 
 
   
   float angleRadians2 =atan(accel_y/sqrt(accel_x*accel_x+accel_z*accel_z));
   angleDegrees2= angleRadians2*180/PI; 
+  auto angleServo1{getAngle(1,angleDegrees1,angleDegrees2)};
+  auto angleServo2{getAngle(2,angleDegrees1,angleDegrees2)};
+  auto angleServo3{getAngle(3,angleDegrees1,angleDegrees2)};
+   servo1.write(angleServo1);
+   servo2.write(angleServo2);
+   servo3.write(angleServo3+6);
 
-/*
-  imu_data_to_publish.x = angleDegrees2;
-  imu_data_to_publish.y = angleDegrees1;
+  imu_data_to_publish.x = angleServo1;
+  imu_data_to_publish.y = angleServo2;
+  imu_data_to_publish.z = angleServo3;
   rcl_publish(&imu_publisher, &imu_data_to_publish, NULL);
-*/
-  servo1.write(static_cast<int>(angleDegrees2));
-  
+
+
+
 
 }
 
@@ -254,37 +261,9 @@ void setup() {
   //servo3.write(0);
   delay(3000);
   ////////////////////////////////////
-  //create a task that will be executed in the Task1code() function, with priority 1 and executed on core 0
-  xTaskCreatePinnedToCore(
-                    Task1code,   /* Task function. */
-                    "Task1",     /* name of task. */
-                    10000,       /* Stack size of task */
-                    NULL,        /* parameter of the task */
-                    1,           /* priority of the task */
-                    &Task1,      /* Task handle to keep track of created task */
-                    0);          /* pin task to core 0 */                  
-  delay(500); 
-
-  //create a task that will be executed in the Task2code() function, with priority 1 and executed on core 1
-  xTaskCreatePinnedToCore(
-                    Task2code,   /* Task function. */
-                    "Task2",     /* name of task. */
-                    10000,       /* Stack size of task */
-                    NULL,        /* parameter of the task */
-                    1,           /* priority of th*/
-                    &Task2,      /* Task handle to keep track of created task */
-                    1);          /* pin task to core 1 */
-    delay(500); 
-}
-
-//Task1code: blinks an LED every 1000 ms
-void Task1code( void * pvParameters ){
-  Serial.print("Task1 running on core ");
-  Serial.println(xPortGetCoreID());
-
-  set_microros_transports();
-  
-  allocator = rcl_get_default_allocator();
+  //todas las cosas que estaban en el loop
+    set_microros_transports();
+    allocator = rcl_get_default_allocator();
 
     // Crear opciones de inicialización e incluir el dominio
     rcl_init_options_t init_options = rcl_get_zero_initialized_init_options();
@@ -303,28 +282,24 @@ void Task1code( void * pvParameters ){
     ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
     "/imu"));
      // // create publisher
-
+  RCCHECK(rclc_publisher_init_default(
+    &imu_publisher,
+    &node,
+    ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
+    "/imu_print"));
   // create executor
   RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));
   RCCHECK(rclc_executor_add_subscription( &executor,&imu_subscriber,&imu_data_received,&imu_subscription_callback,ON_NEW_DATA));
 
 
-  for(;;){
-    delay(100);
-  RCCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10)));
-  } 
+
 }
 
-//Movimiento de los motores
-
-void Task2code( void * pvParameters ){
-  Serial.print("angulo 1: ");
-  Serial.println(angleDegrees1);
-  Serial.print("angulo 2: ");
-  Serial.println(angleDegrees2);
-  
-}
 
 void loop() {
   
+  
+
+  RCCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10)));
+
 }
