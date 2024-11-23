@@ -15,6 +15,23 @@
 #include <MatrixMath.h>
 
 
+
+//parametros de filtro pasabajas
+float fc = 5.0;  // Frecuencia de corte (Hz)
+float dt = 0.01;  // Periodo de muestreo (s)
+float tau = 1.0 / (2.0 * PI * fc);
+float beta = dt / (dt + tau);
+  float accel_x {};
+  float accel_y {};
+  float accel_z {};
+
+  float accel_xFiltered {};
+  float accel_yFiltered{};
+  float accel_zFiltered {};
+
+
+
+
 rcl_subscription_t imu_subscriber;
 rcl_publisher_t imu_publisher;
 sensor_msgs__msg__Imu imu_data_received;
@@ -221,19 +238,27 @@ void error_loop(){
 void imu_subscription_callback(const void * msgin)
 {
   const sensor_msgs__msg__Imu * msg = (const sensor_msgs__msg__Imu *)msgin;
-  float accel_x = msg->linear_acceleration.x;
-  float accel_y = msg->linear_acceleration.y;
-  float accel_z = msg->linear_acceleration.z;
+   accel_x = msg->linear_acceleration.x;
+   accel_y = msg->linear_acceleration.y;
+   accel_z = msg->linear_acceleration.z;
 
-   float angleRadians1 =atan(accel_x/sqrt(accel_y*accel_y+accel_z*accel_z));
-angleDegrees1= angleRadians1*180/PI; 
+   accel_xFiltered = accel_xFiltered +beta*(accel_x- accel_xFiltered);
+   accel_yFiltered = accel_yFiltered +beta*(accel_y- accel_yFiltered);
+   accel_zFiltered = accel_zFiltered +beta*(accel_z- accel_zFiltered);
+
 
   
-  float angleRadians2 =atan(accel_y/sqrt(accel_x*accel_x+accel_z*accel_z));
-  angleDegrees2= angleRadians2*180/PI; 
-  auto angleServo1{getAngle(1,angleDegrees1,angleDegrees2)};
-  auto angleServo2{getAngle(2,angleDegrees1,angleDegrees2)};
-  auto angleServo3{getAngle(3,angleDegrees1,angleDegrees2)};
+  
+
+   float angleRadians1 =atan(accel_xFiltered/sqrt(accel_yFiltered*accel_yFiltered+accel_zFiltered*accel_zFiltered));
+angleDegrees1= -angleRadians1*180/PI; 
+
+  
+  float angleRadians2 =atan(accel_yFiltered/sqrt(accel_xFiltered*accel_xFiltered+accel_zFiltered*accel_zFiltered));
+  angleDegrees2= -angleRadians2*180/PI; 
+  auto angleServo1{getAngle(1,angleDegrees2,angleDegrees1)};
+  auto angleServo2{getAngle(2,angleDegrees2,angleDegrees1)};
+  auto angleServo3{getAngle(3,angleDegrees2,angleDegrees1)};
    servo1.write(angleServo1);
    servo2.write(angleServo2);
    servo3.write(angleServo3+6);
