@@ -3,7 +3,7 @@
 # Code by Ricardo Berumen
 
 from geometry_msgs.msg import PoseStamped
-from nav2_connection_class import NavigatorUtils, TaskResult
+from explorer_navigator.nav2_connection_class import NavigatorUtils, TaskResult
 import rclpy
 from rclpy.duration import Duration
 from action_msgs.msg import GoalStatus
@@ -21,8 +21,8 @@ def main():
     initial_pose = PoseStamped()
     initial_pose.header.frame_id = 'map'
     initial_pose.header.stamp = navigator.get_clock().now().to_msg()
-    initial_pose.pose.position.x = 3.45
-    initial_pose.pose.position.y = 2.15
+    initial_pose.pose.position.x = 0.035
+    initial_pose.pose.position.y = 0.0
     initial_pose.pose.orientation.z = 0.0
     initial_pose.pose.orientation.w = 1.0
     navigator.setInitialPose(initial_pose)
@@ -35,9 +35,9 @@ def main():
     goal_pose = PoseStamped()
     goal_pose.header.frame_id = 'map'
     goal_pose.header.stamp = navigator.get_clock().now().to_msg()
-    goal_pose.pose.position.x = -2.0
-    goal_pose.pose.position.y = -0.5
-    goal_pose.pose.orientation.w = 1.0
+    goal_pose.pose.position.x = 1.0
+    goal_pose.pose.position.y = -0.0
+    goal_pose.pose.orientation.w = 0.0603
     navigator.goToPose(goal_pose)
 
 
