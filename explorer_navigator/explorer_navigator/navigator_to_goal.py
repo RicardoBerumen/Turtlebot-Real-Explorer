@@ -32,12 +32,44 @@ def main():
 
     # Go to the goal pose
 
+    hazmat1 = "oxygen"
+    hazmat2 = "organic peroxide"
+    hazmat3 = "flammable gas"
+    hazmat4 = "spontaneously combustible"
+    hazmat5 = "dangerous"
+    select = 0
+    select = input("Select goal: \n    1)"+hazmat1+"\n    2)"+hazmat2+"\n    3)"+hazmat3+"\n    4)"+hazmat4+"\n    5)"+hazmat5)
+
     goal_pose = PoseStamped()
     goal_pose.header.frame_id = 'map'
     goal_pose.header.stamp = navigator.get_clock().now().to_msg()
-    goal_pose.pose.position.x = 1.0
-    goal_pose.pose.position.y = -0.0
-    goal_pose.pose.orientation.w = 0.0603
+    match select:
+        case "1":
+            goal_pose.pose.position.x = 0.42
+            goal_pose.pose.position.y = 0.484
+            goal_pose.pose.orientation.w = 0.0603
+        case "2":
+            goal_pose.pose.position.x = 1.0
+            goal_pose.pose.position.y = -0.0
+            goal_pose.pose.orientation.w = 0.0603
+        case "3":
+            goal_pose.pose.position.x = 1.0
+            goal_pose.pose.position.y = -0.0
+            goal_pose.pose.orientation.w = 0.0603
+        case "4":
+            goal_pose.pose.position.x = 1.0
+            goal_pose.pose.position.y = -0.0
+            goal_pose.pose.orientation.w = 0.0603
+        case "5":
+            goal_pose.pose.position.x = 1.0
+            goal_pose.pose.position.y = -0.0
+            goal_pose.pose.orientation.w = 0.0603
+        case _:
+            goal_pose.pose.position.x = 0.0
+            goal_pose.pose.position.y = -0.0
+            goal_pose.pose.orientation.w = 0.00
+            navigator.info("Failed to receive valid objective")
+    
     navigator.goToPose(goal_pose)
 
 
@@ -54,8 +86,9 @@ def main():
                     + ' seconds')
             
             # Nav timeout if taken too long
-            if Duration.from_msg(feedback.navigation_time) > Duration(seconds=600.0):
+            if Duration.from_msg(feedback.navigation_time) > Duration(seconds=1500.0):
                 navigator.cancelNav()
+                navigator.info("Navigation Canceled")
     
     # Return code
     result = navigator.getResult()
