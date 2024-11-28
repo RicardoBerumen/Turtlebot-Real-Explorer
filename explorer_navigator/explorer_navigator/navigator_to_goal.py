@@ -25,14 +25,14 @@ def main():
     x_d = []
     y_d = []
     z_d = []
-    df = pd.read_csv("/home/student/ros0_ws/src/ros2_explorer/explorer_navigator/explorer_navigator/data/Detected_Labels_20241126_235738.csv", dtype=dtype)
+    df = pd.read_csv("/home/student/ros0_ws/src/ros2_explorer/explorer_navigator/explorer_navigator/data/Detected_Labels_20241127_221629.csv", dtype=dtype)
     print(df)
 # Go to the goal pose
     hazmat1 = df.iloc[0,0] #"oxygen"
     hazmat2 = df.iloc[1,0] #"organic peroxide"
     hazmat3 = df.iloc[2,0] #"flammable gas"
     hazmat4 = df.iloc[3,0] #"spontaneously combustible"
-    hazmat5 = "dangerous" #df.iloc[4,0]
+    hazmat5 = df.iloc[4,0] #"dangerous" 
     select = 0
     select = input("Select goal: \n    1)"+hazmat1+"\n    2)"+hazmat2+"\n    3)"+hazmat3+"\n    4)"+hazmat4+"\n    5)"+hazmat5+"\n")
     # Set Initial Pose
@@ -53,7 +53,7 @@ def main():
     goal_pose = PoseStamped()
     goal_pose.header.frame_id = 'map'
     goal_pose.header.stamp = navigator.get_clock().now().to_msg()
-    select_num = int(select)
+    select_num = int(select) - 1
     """match select:
         case "1":
             goal_pose.pose.position.x = 0.377
@@ -80,9 +80,9 @@ def main():
             goal_pose.pose.position.y = -0.0
             goal_pose.pose.orientation.w = 0.00
             navigator.info("Failed to receive valid objective")"""
-    goal_pose.pose.position.x = df.iloc[select_num,1]
-    goal_pose.pose.position.y = df.iloc[select_num,2]
-    goal_pose.pose.orientation.w = df.iloc[select_num,3]
+    goal_pose.pose.position.x = df.iloc[(select_num),1]
+    goal_pose.pose.position.y = df.iloc[(select_num),2]
+    goal_pose.pose.orientation.w = df.iloc[(select_num),3]
     
     navigator.goToPose(goal_pose)
 
