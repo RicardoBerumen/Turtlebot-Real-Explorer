@@ -4,7 +4,7 @@ from explorer_interfaces.action import Wander
 from explorer_interfaces.action import Discover
 from nav2_msgs.action import NavigateToPose
 
-from std_msgs.msg import Float32
+from std_msgs.msg import Float32, Int32
 from visualization_msgs.msg import MarkerArray
 
 import rclpy
@@ -28,7 +28,9 @@ class Manager(Node):
         self.navigation_client = NavigationClient()
         self.watchtower_subscription = self.create_subscription(Float32,'map_progress',self.watchtower_callback,10)
         self.trajectory_subscription = self.create_subscription(MarkerArray,'trajectory_node_list',self.trajectory_callback,10)
+        #self.hazmat_subscription = self.create_subscription(Int32, 'hazmat_count', self.hazmat_callback, 10)
         timer_period = 5  # seconds
+        self.hazmat = 0
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.map_explored=0.01
         self.map_finished=False
@@ -52,6 +54,11 @@ class Manager(Node):
         #Print feedback in terminal acording to timer_period
         if not self.map_finished:
             self.print_feedback()
+
+    def hazmat_callback(self, msg):
+        # Receive number of hazmats read
+        self.hazmat = msg.data
+
 
     def watchtower_callback(self, msg):
         self.map_explored=msg.data*100 #Convert to %
