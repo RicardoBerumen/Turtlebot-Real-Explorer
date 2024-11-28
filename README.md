@@ -54,7 +54,7 @@ export ROS_DOMAIN_ID=5
 export TURTLEBOT3_MODEL=burger
 ```
 ## How to run exploration
-Execute the launch file and pass the map name (Opens Rviz, Cartographer, Nav2 and exploration servers):
+Execute the launch file :
 ```
 ros2 launch explorer_bringup explorer.launch.py
 ```
@@ -64,7 +64,17 @@ ros2 run explorer_bringup manager
 ```
 ## Save map with nav2
 ```
-ros2 run explorer_bringup manager
+ros2 run nav2_map_server map_saver_cli -f ~/(your_map)
+```
+
+## Run nav2 location and goal to hazard 
+Execute turtlebot3 navigation2 launch with map name :
+```
+ros2 launch turtlebot3_navigation2 navigation2.launch.py map:=$HOME/(your_map).yaml
+```
+Execute navigation node to goal and select objective : 
+```
+ros2 run  explorer_navigator navigator_to_goal
 ```
 
 ## Run navigation

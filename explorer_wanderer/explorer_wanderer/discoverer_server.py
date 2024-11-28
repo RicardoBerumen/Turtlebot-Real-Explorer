@@ -20,7 +20,7 @@ from rcl_interfaces.msg import ParameterType
 from action_msgs.msg import GoalStatus
 
 # messages
-from std_msgs.msg import Float32
+from std_msgs.msg import Float32, Int32
 from nav_msgs.msg import OccupancyGrid
 from nav_msgs.msg import MapMetaData
 from nav2_msgs.action import NavigateToPose
@@ -36,8 +36,13 @@ class DiscovererServer(Node):
         self._action_server = ActionServer(self, Discover, 'discover', self.execute_callback)
         self.watchtower_subscription = self.create_subscription(Float32, 'map_progress', self.watchtower_callback, 10)
         self.watchtower_subscription  # prevent unused variable warning
+        self.hazmat_subscription = self.create_subscription(Int32, 'hazmat_count', self.hazmat_callback, 10)
+        self.hazmat_subscription
         self.navigation_client = NavigationClient()
         self.stop_discovering = False
+        self.hazmat = 0
+        self.hazmat_prev = 0
+        self.haz_thresh = 5
         self.map_completed_thres=1.0 #Initialize threshold to max (100%)
         self.get_logger().info("Discoverer Server is ready")
 
@@ -45,6 +50,12 @@ class DiscovererServer(Node):
         # If map_progress is higher than the threshold send stop wandering signal
         if msg.data > self.map_completed_thres:
             self.stop_discovering = True
+    
+    def hazmat_callback(self, msg):
+        self.hazmat = msg.data
+        if self.hazmat >= self.haz_thresh and self.hazmat_prev >= self.haz_thresh:
+            self.stop_discovering = True
+        self.hazmat_prev = self.hazmat
 
     def execute_callback(self, goal_handle):
         self.get_logger().info("Discoverer Server received a goal")
@@ -63,9 +74,15 @@ class NavigationClient(Node):
         super().__init__('navigation_client')
         self._action_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
         self.cartographer = CartographerSubscriber()  # a cartographer subscription is created to access the occupancy
+        self.hazmat_subscription = self.create_subscription(Int32, 'hazmat_count', self.hazmat_callback, 10)
+        self.hazmat = 0
+        self.haz_thresh = 5
         rclpy.spin_once(self.cartographer)
         # grid and determine which positions to navigate to
 
+    def hazmat_callback(self, msg):
+        self.hazmat = msg.data
+    
     def goal_response_callback(self, future):
         goal_handle = future.result()
         if not goal_handle.accepted:
@@ -103,6 +120,11 @@ class NavigationClient(Node):
         goal_msg.pose.pose.position.x = float(waypoint[0])
         goal_msg.pose.pose.position.y = float(waypoint[1])
         # goal_msg.pose.pose.orientation.w = 1.0
+        if self.hazmat >= self.haz_thresh:
+            self.get_logger().info("Seen all hazmats!")
+            goal_msg.pose.pose.position.x = 0.035
+            goal_msg.pose.pose.position.y = 0.0
+            goal_msg.pose.pose.orientation.w = 1.0
 
         self.get_logger().info(
             'Sending navigation goal request x: ' + str(round(goal_msg.pose.pose.position.x, 2)) + ' y: ' + str(
